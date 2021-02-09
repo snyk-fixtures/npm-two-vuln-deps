@@ -1,0 +1,230 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Snyk Open Source",
+          "rules": [
+            {
+              "id": "SNYK-JS-BL-608877",
+              "shortDescription": {
+                "text": "High severity - Remote Memory Exposure vulnerability in bl"
+              },
+              "fullDescription": {
+                "text": "(CVE-2020-8244) bl@1.1.2"
+              },
+              "help": {
+                "text": "",
+                "markdown": "* Package Manager: npm\n* Vulnerable module: bl\n* Introduced through: npm-two-vuln-deps@1.0.0, twilio@2.11.1 and others\n### Detailed paths\n* _Introduced through_: npm-two-vuln-deps@1.0.0 › twilio@2.11.1 › request@2.74.0 › bl@1.1.2\n# Overview\n[bl](https://github.com/rvagg/bl) is a library that allows you to collect buffers and access with a standard readable buffer interface.\n\nAffected versions of this package are vulnerable to Remote Memory Exposure. If user input ends up in `consume()` argument and can become negative, BufferList state can be corrupted, tricking it into exposing uninitialized memory via regular `.slice()` calls.\r\n\r\n## PoC by chalker\r\n```\r\nconst { BufferList } = require('bl')\r\nconst secret = require('crypto').randomBytes(256)\r\nfor (let i = 0; i < 1e6; i++) {\r\n  const clone = Buffer.from(secret)\r\n  const bl = new BufferList()\r\n  bl.append(Buffer.from('a'))\r\n  bl.consume(-1024)\r\n  const buf = bl.slice(1)\r\n  if (buf.indexOf(clone) !== -1) {\r\n    console.error(`Match (at ${i})`, buf)\r\n  }\r\n}\r\n```\n# Remediation\nUpgrade `bl` to version 2.2.1, 3.0.1, 4.0.3, 1.2.3 or higher.\n# References\n- [Github Commit](https://github.com/rvagg/bl/commit/8a8c13c880e2bef519133ea43e0e9b78b5d0c91e)\n- [Github Commit](https://github.com/rvagg/bl/commit/d3e240e3b8ba4048d3c76ef5fb9dd1f8872d3190)\n- [Github Commit](https://github.com/rvagg/bl/commit/dacc4ac7d5fcd6201bcf26fbd886951be9537466)\n- [GitHub Commit](https://github.com/rvagg/bl/commit/0bd87ec97be399b129fc62feff2943ffa21bcc00)\n- [HackerOne Report](https://hackerone.com/reports/966347)\n"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "CWE-9",
+                  "npm"
+                ]
+              }
+            },
+            {
+              "id": "npm:hoek:20180212",
+              "shortDescription": {
+                "text": "Medium severity - Prototype Pollution vulnerability in hoek"
+              },
+              "fullDescription": {
+                "text": "(CVE-2018-3728) hoek@2.16.3"
+              },
+              "help": {
+                "text": "",
+                "markdown": "* Package Manager: npm\n* Vulnerable module: hoek\n* Introduced through: npm-two-vuln-deps@1.0.0, twilio@2.11.1 and others\n### Detailed paths\n* _Introduced through_: npm-two-vuln-deps@1.0.0 › twilio@2.11.1 › request@2.74.0 › hawk@3.1.3 › hoek@2.16.3\n* _Introduced through_: npm-two-vuln-deps@1.0.0 › twilio@2.11.1 › request@2.74.0 › hawk@3.1.3 › boom@2.10.1 › hoek@2.16.3\n* _Introduced through_: npm-two-vuln-deps@1.0.0 › twilio@2.11.1 › request@2.74.0 › hawk@3.1.3 › sntp@1.0.9 › hoek@2.16.3\n* _Introduced through_: npm-two-vuln-deps@1.0.0 › twilio@2.11.1 › request@2.74.0 › hawk@3.1.3 › cryptiles@2.0.5 › boom@2.10.1 › hoek@2.16.3\n# Overview\n[hoek](https://github.com/hapijs/hoek) is an Utility methods for the hapi ecosystem.\n\nAffected versions of this package are vulnerable to Prototype Pollution. The utilities function allow modification of the `Object` prototype. If an attacker can control part of the structure passed to this function, they could add or modify an existing property.  \r\n\r\n# PoC by Olivier Arteau (HoLyVieR)\r\n```js\r\nvar Hoek = require('hoek');\r\nvar malicious_payload = '{\"__proto__\":{\"oops\":\"It works !\"}}';\r\n\r\nvar a = {};\r\nconsole.log(\"Before : \" + a.oops);\r\nHoek.merge({}, JSON.parse(malicious_payload));\r\nconsole.log(\"After : \" + a.oops);\r\n\r\n```\n\n# Details\n\nDenial of Service (DoS) describes a family of attacks, all aimed at making a system inaccessible to its original and legitimate users. There are many types of DoS attacks, ranging from trying to clog the network pipes to the system by generating a large volume of traffic from many machines (a Distributed Denial of Service - DDoS - attack) to sending crafted requests that cause a system to crash or take a disproportional amount of time to process.\n\nThe Regular expression Denial of Service (ReDoS) is a type of Denial of Service attack. Regular expressions are incredibly powerful, but they aren't very intuitive and can ultimately end up making it easy for attackers to take your site down.\n\nLet’s take the following regular expression as an example:\n```js\nregex = /A(B|C+)+D/\n```\n\nThis regular expression accomplishes the following:\n- `A` The string must start with the letter 'A'\n- `(B|C+)+` The string must then follow the letter A with either the letter 'B' or some number of occurrences of the letter 'C' (the `+` matches one or more times). The `+` at the end of this section states that we can look for one or more matches of this section.\n- `D` Finally, we ensure this section of the string ends with a 'D'\n\nThe expression would match inputs such as `ABBD`, `ABCCCCD`, `ABCBCCCD` and `ACCCCCD`\n\nIt most cases, it doesn't take very long for a regex engine to find a match:\n\n```bash\n$ time node -e '/A(B|C+)+D/.test(\"ACCCCCCCCCCCCCCCCCCCCCCCCCCCCD\")'\n0.04s user 0.01s system 95% cpu 0.052 total\n\n$ time node -e '/A(B|C+)+D/.test(\"ACCCCCCCCCCCCCCCCCCCCCCCCCCCCX\")'\n1.79s user 0.02s system 99% cpu 1.812 total\n```\n\nThe entire process of testing it against a 30 characters long string takes around ~52ms. But when given an invalid string, it takes nearly two seconds to complete the test, over ten times as long as it took to test a valid string. The dramatic difference is due to the way regular expressions get evaluated.\n\nMost Regex engines will work very similarly (with minor differences). The engine will match the first possible way to accept the current character and proceed to the next one. If it then fails to match the next one, it will backtrack and see if there was another way to digest the previous character. If it goes too far down the rabbit hole only to find out the string doesn’t match in the end, and if many characters have multiple valid regex paths, the number of backtracking steps can become very large, resulting in what is known as _catastrophic backtracking_.\n\nLet's look at how our expression runs into this problem, using a shorter string: \"ACCCX\". While it seems fairly straightforward, there are still four different ways that the engine could match those three C's:\n1. CCC\n2. CC+C\n3. C+CC\n4. C+C+C.\n\nThe engine has to try each of those combinations to see if any of them potentially match against the expression. When you combine that with the other steps the engine must take, we can use [RegEx 101 debugger](https://regex101.com/debugger) to see the engine has to take a total of 38 steps before it can determine the string doesn't match.\n\nFrom there, the number of steps the engine must use to validate a string just continues to grow.\n\n| String | Number of C's | Number of steps |\n| -------|-------------:| -----:|\n| ACCCX | 3 | 38\n| ACCCCX | 4 | 71\n| ACCCCCX | 5 | 136\n| ACCCCCCCCCCCCCCX | 14 | 65,553\n\n\nBy the time the string includes 14 C's, the engine has to take over 65,000 steps just to see if the string is valid. These extreme situations can cause them to work very slowly (exponentially related to input size, as shown above), allowing an attacker to exploit this and can cause the service to excessively consume CPU, resulting in a Denial of Service.\n\n# Remediation\nUpgrade `hoek` to version 4.2.1, 5.0.3 or higher.\n# References\n- [GitHub Commit](https://github.com/hapijs/hoek/commit/32ed5c9413321fbc37da5ca81a7cbab693786dee)\n- [GitHub Commit](https://github.com/hapijs/hoek/commit/5aed1a8c4a3d55722d1c799f2368857bf418d6df)\n- [GitHub Issue](https://github.com/hapijs/hoek/issues/230)\n- [GitHub PR](https://github.com/hapijs/hoek/pull/227)\n- [HackerOne Report](https://hackerone.com/reports/310439)\n- [NPM Security Advisory](http://npmjs.com/advisories/566)\n"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "CWE-400",
+                  "npm"
+                ]
+              }
+            },
+            {
+              "id": "npm:ms:20170412",
+              "shortDescription": {
+                "text": "Low severity - Regular Expression Denial of Service (ReDoS) vulnerability in ms"
+              },
+              "fullDescription": {
+                "text": "ms@0.7.3"
+              },
+              "help": {
+                "text": "",
+                "markdown": "* Package Manager: npm\n* Vulnerable module: ms\n* Introduced through: npm-two-vuln-deps@1.0.0, twilio@2.11.1 and others\n### Detailed paths\n* _Introduced through_: npm-two-vuln-deps@1.0.0 › twilio@2.11.1 › jsonwebtoken@5.4.1 › ms@0.7.3\n# Overview\r\n[`ms`](https://www.npmjs.com/package/ms) is a tiny millisecond conversion utility.\r\n\r\nAffected versions of this package are vulnerable to Regular Expression Denial of Service (ReDoS) due to an incomplete fix for previously reported vulnerability [npm:ms:20151024](https://snyk.io/vuln/npm:ms:20151024). The fix limited the length of accepted input string to 10,000 characters, and turned to be insufficient making it possible to block the event loop for 0.3 seconds (on a typical laptop) with a specially crafted string passed to `ms()` function.\r\n\r\n*Proof of concept*\r\n```js\r\nms = require('ms');\r\nms('1'.repeat(9998) + 'Q') // Takes about ~0.3s\r\n```\r\n\r\n**Note:** Snyk's patch for this vulnerability limits input length to 100 characters. This new limit was deemed to be a breaking change by the author.\r\nBased on user feedback, we believe the risk of breakage is _very_ low, while the value to your security is much greater, and therefore opted to still capture this change in a patch for earlier versions as well.  Whenever patching security issues, we always suggest to run tests on your code to validate that nothing has been broken.\r\n\r\nFor more information on `Regular Expression Denial of Service (ReDoS)` attacks, go to our [blog](https://snyk.io/blog/redos-and-catastrophic-backtracking/).\r\n\r\n# Disclosure Timeline\r\n- Feb 9th, 2017 - Reported the issue to package owner.\r\n- Feb 11th, 2017 - Issue acknowledged by package owner.\r\n- April 12th, 2017 - Fix PR opened by Snyk Security Team.\r\n- May 15th, 2017 - Vulnerability published.\r\n- May 16th, 2017 - Issue fixed and version `2.0.0` released.\r\n- May 21th, 2017 - Patches released for versions `>=0.7.1, <=1.0.0`.\r\n\r\n# Details\r\nDenial of Service (DoS) describes a family of attacks, all aimed at making a system inaccessible to its original and legitimate users. There are many types of DoS attacks, ranging from trying to clog the network pipes to the system by generating a large volume of traffic from many machines (a Distributed Denial of Service - DDoS - attack) to sending crafted requests that cause a system to crash or take a disproportional amount of time to process.\r\n\r\nThe Regular expression Denial of Service (ReDoS) is a type of Denial of Service attack. Regular expressions are incredibly powerful, but they aren't very intuitive and can ultimately end up making it easy for attackers to take your site down.\r\n\r\nLet’s take the following regular expression as an example:\r\n```js\r\nregex = /A(B|C+)+D/\r\n```\r\n\r\nThis regular expression accomplishes the following:\r\n- `A` The string must start with the letter 'A'\r\n- `(B|C+)+` The string must then follow the letter A with either the letter 'B' or some number of occurrences of the letter 'C' (the `+` matches one or more times). The `+` at the end of this section states that we can look for one or more matches of this section.\r\n- `D` Finally, we ensure this section of the string ends with a 'D'\r\n\r\nThe expression would match inputs such as `ABBD`, `ABCCCCD`, `ABCBCCCD` and `ACCCCCD`\r\n\r\nIt most cases, it doesn't take very long for a regex engine to find a match:\r\n\r\n```bash\r\n$ time node -e '/A(B|C+)+D/.test(\"ACCCCCCCCCCCCCCCCCCCCCCCCCCCCD\")'\r\n0.04s user 0.01s system 95% cpu 0.052 total\r\n\r\n$ time node -e '/A(B|C+)+D/.test(\"ACCCCCCCCCCCCCCCCCCCCCCCCCCCCX\")'\r\n1.79s user 0.02s system 99% cpu 1.812 total\r\n```\r\n\r\nThe entire process of testing it against a 30 characters long string takes around ~52ms. But when given an invalid string, it takes nearly two seconds to complete the test, over ten times as long as it took to test a valid string. The dramatic difference is due to the way regular expressions get evaluated.\r\n\r\nMost Regex engines will work very similarly (with minor differences). The engine will match the first possible way to accept the current character and proceed to the next one. If it then fails to match the next one, it will backtrack and see if there was another way to digest the previous character. If it goes too far down the rabbit hole only to find out the string doesn’t match in the end, and if many characters have multiple valid regex paths, the number of backtracking steps can become very large, resulting in what is known as _catastrophic backtracking_.\r\n\r\nLet's look at how our expression runs into this problem, using a shorter string: \"ACCCX\". While it seems fairly straightforward, there are still four different ways that the engine could match those three C's:\r\n1. CCC\r\n2. CC+C\r\n3. C+CC\r\n4. C+C+C.\r\n\r\nThe engine has to try each of those combinations to see if any of them potentially match against the expression. When you combine that with the other steps the engine must take, we can use [RegEx 101 debugger](https://regex101.com/debugger) to see the engine has to take a total of 38 steps before it can determine the string doesn't match.\r\n\r\nFrom there, the number of steps the engine must use to validate a string just continues to grow.\r\n\r\n| String | Number of C's | Number of steps |\r\n| -------|-------------:| -----:|\r\n| ACCCX | 3 | 38\r\n| ACCCCX | 4 | 71\r\n| ACCCCCX | 5 | 136\r\n| ACCCCCCCCCCCCCCX | 14 | 65,553\r\n\r\n\r\nBy the time the string includes 14 C's, the engine has to take over 65,000 steps just to see if the string is valid. These extreme situations can cause them to work very slowly (exponentially related to input size, as shown above), allowing an attacker to exploit this and can cause the service to excessively consume CPU, resulting in a Denial of Service.\r\n\r\n\r\n# Remediation\r\nUpgrade `ms` to version 2.0.0 or higher.\r\n\r\n# References\r\n- [GitHub PR](https://github.com/zeit/ms/pull/89)\r\n- [GitHub Commit](https://github.com/zeit/ms/pull/89/commits/305f2ddcd4eff7cc7c518aca6bb2b2d2daad8fef)"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "CWE-400",
+                  "npm"
+                ]
+              }
+            },
+            {
+              "id": "npm:tunnel-agent:20170305",
+              "shortDescription": {
+                "text": "Medium severity - Uninitialized Memory Exposure vulnerability in tunnel-agent"
+              },
+              "fullDescription": {
+                "text": "tunnel-agent@0.4.3"
+              },
+              "help": {
+                "text": "",
+                "markdown": "* Package Manager: npm\n* Vulnerable module: tunnel-agent\n* Introduced through: npm-two-vuln-deps@1.0.0, twilio@2.11.1 and others\n### Detailed paths\n* _Introduced through_: npm-two-vuln-deps@1.0.0 › twilio@2.11.1 › request@2.74.0 › tunnel-agent@0.4.3\n# Overview\r\n[`tunnel-agent`](https://www.npmjs.com/package/tunnel-agent) is HTTP proxy tunneling agent. Affected versions of the package are vulnerable to Uninitialized Memory Exposure. \r\n\r\nA possible memory disclosure vulnerability exists when a value of type `number` is used to set the _proxy.auth_ option of a request `request` and results in a possible uninitialized memory exposures in the request body.\r\n\r\nThis is a result of unobstructed use of the `Buffer` constructor, whose [insecure default constructor increases the odds of memory leakage](https://snyk.io/blog/exploiting-buffer/).\r\n\r\n# Details\r\nConstructing a `Buffer` class with integer `N` creates a `Buffer` of length `N` with raw (not \"zero-ed\") memory.\r\n\r\nIn the following example, the first call would allocate 100 bytes of memory, while the second example will allocate the memory needed for the string \"100\":\r\n```js\r\n// uninitialized Buffer of length 100\r\nx = new Buffer(100);\r\n// initialized Buffer with value of '100'\r\nx = new Buffer('100');\r\n```\r\n\r\n`tunnel-agent`'s `request` construction uses the default `Buffer` constructor as-is, making it easy to append uninitialized memory to an existing list. If the value of the buffer list is exposed to users, it may expose raw server side memory, potentially holding secrets, private data and code. This is a similar vulnerability to the infamous [`Heartbleed`](http://heartbleed.com/) flaw in OpenSSL.\r\n\r\n### Proof of concept by ChALkeR\r\n```js\r\nrequire('request')({\r\n  method: 'GET',\r\n  uri: 'http://www.example.com',\r\n  tunnel: true,\r\n  proxy:{\r\n      protocol: 'http:',\r\n      host:\"127.0.0.1\",\r\n      port:8080,\r\n      auth:80\r\n  }\r\n});\r\n```\r\n\r\nYou can read more about the insecure `Buffer` behavior [on our blog](https://snyk.io/blog/exploiting-buffer/).\r\n\r\nSimilar vulnerabilities were discovered in [request](https://snyk.io/vuln/npm:request:20160119), [mongoose](https://snyk.io/vuln/npm:mongoose:20160116), [ws](https://snyk.io/vuln/npm:ws:20160104) and [sequelize](https://snyk.io/vuln/npm:sequelize:20160115).\r\n\r\n# Remediation\r\nUpgrade `tunnel-agent` to version 0.6.0 or higher.\r\n**Note** This is vulnerable only for Node <=4\n\n# References\n- [GitHub Commit](https://github.com/request/tunnel-agent/commit/9ca95ec7219daface8a6fc2674000653de0922c0)\n- [PoC by ChALkeR](https://gist.github.com/ChALkeR/fd6b2c445834244e7d440a043f9d2ff4)\n"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "CWE-201",
+                  "npm"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "SNYK-JS-BL-608877",
+          "level": "error",
+          "message": {
+            "text": "This file introduces a vulnerable bl package with a high severity vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "npm:hoek:20180212",
+          "level": "warning",
+          "message": {
+            "text": "This file introduces a vulnerable hoek package with a medium severity vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "npm:hoek:20180212",
+          "level": "warning",
+          "message": {
+            "text": "This file introduces a vulnerable hoek package with a medium severity vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "npm:hoek:20180212",
+          "level": "warning",
+          "message": {
+            "text": "This file introduces a vulnerable hoek package with a medium severity vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "npm:hoek:20180212",
+          "level": "warning",
+          "message": {
+            "text": "This file introduces a vulnerable hoek package with a medium severity vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "npm:ms:20170412",
+          "level": "note",
+          "message": {
+            "text": "This file introduces a vulnerable ms package with a low severity vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "npm:tunnel-agent:20170305",
+          "level": "warning",
+          "message": {
+            "text": "This file introduces a vulnerable tunnel-agent package with a medium severity vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
